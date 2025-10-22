@@ -70,6 +70,39 @@
             font-style: italic;
         }
         
+        .links-container {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+        }
+        
+        .link-item {
+            display: flex;
+            align-items: center;
+            color: white;
+            text-decoration: none;
+            transition: transform 0.3s ease, color 0.3s ease;
+        }
+        
+        .link-item:hover {
+            transform: translateY(-3px);
+            color: #e8eaf6;
+        }
+        
+        .link-item i {
+            font-size: 1.8rem;
+            margin-right: 8px;
+        }
+        
+        .link-text {
+            font-size: 1rem;
+            font-weight: 500;
+        }
+        
         .content {
             padding: 30px;
         }
@@ -293,6 +326,18 @@
                 font-size: 1.8rem;
             }
             
+            .links-container {
+                gap: 15px;
+            }
+            
+            .link-item i {
+                font-size: 1.5rem;
+            }
+            
+            .link-text {
+                font-size: 0.9rem;
+            }
+            
             /* 在小屏幕上调整第一列宽度 */
             .data-table th:first-child, 
             .data-table td:first-child {
@@ -342,6 +387,21 @@
             </div>
             <div class="correspondence">
                 <sup>*</sup>Corresponding author
+            </div>
+            
+            <div class="links-container">
+                <a href="https://arxiv.org/abs/xxxx.xxxxx" target="_blank" class="link-item">
+                    <i class="fas fa-file-pdf"></i>
+                    <span class="link-text">Paper</span>
+                </a>
+                <a href="https://huggingface.co/datasets/stormsemper1/PlotGen-Bench" target="_blank" class="link-item">
+                    <i class="fas fa-database"></i>
+                    <span class="link-text">Dataset</span>
+                </a>
+                <a href="https://github.com/plotgen-bench" target="_blank" class="link-item">
+                    <i class="fab fa-github"></i>
+                    <span class="link-text">Code</span>
+                </a>
             </div>
         </header>
         
