@@ -137,16 +137,20 @@
         .data-table th {
             background-color: var(--primary-color);
             color: white;
-            padding: 12px 15px;
-            text-align: left;
+            padding: 12px 8px; /* 减少左右内边距 */
+            text-align: center; /* 居中对齐 */
             font-weight: 600;
             position: sticky;
             top: 0;
+            white-space: nowrap; /* 防止文本换行 */
+            overflow: hidden; /* 隐藏溢出内容 */
+            text-overflow: ellipsis; /* 使用省略号表示溢出 */
         }
         
         .data-table td {
-            padding: 10px 15px;
+            padding: 10px 8px; /* 减少左右内边距 */
             border-bottom: 1px solid var(--border-color);
+            text-align: center; /* 居中对齐 */
         }
         
         /* 设置第一列宽度 */
@@ -155,29 +159,15 @@
             width: 220px;
             min-width: 220px;
             max-width: 220px;
+            text-align: left; /* 第一列左对齐 */
         }
         
-        /* 设置PR和GS列的宽度 */
-        .data-table th[colspan="2"] {
-            width: 120px;
-            min-width: 120px;
-            max-width: 120px;
-        }
-        
-        .data-table td:nth-child(2),
-        .data-table td:nth-child(3),
-        .data-table td:nth-child(4),
-        .data-table td:nth-child(5),
-        .data-table td:nth-child(6),
-        .data-table td:nth-child(7),
-        .data-table td:nth-child(8),
-        .data-table td:nth-child(9),
-        .data-table td:nth-child(10),
-        .data-table td:nth-child(11) {
-            width: 80px;
-            min-width: 80px;
-            max-width: 80px;
-            text-align: center;
+        /* 设置数据列宽度 */
+        .data-table th:not(:first-child),
+        .data-table td:not(:first-child) {
+            width: 85px;
+            min-width: 85px;
+            max-width: 85px;
         }
         
         .data-table tr:nth-child(even) {
@@ -277,6 +267,27 @@
             font-size: 0.95rem;
         }
         
+        /* 为表头添加工具提示 */
+        .data-table th:hover {
+            position: relative;
+        }
+        
+        .data-table th:hover::after {
+            content: attr(title);
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            white-space: nowrap;
+            z-index: 10;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+        
         @media (max-width: 768px) {
             h1 {
                 font-size: 1.8rem;
@@ -291,19 +302,22 @@
             }
             
             /* 在小屏幕上调整其他列宽度 */
-            .data-table td:nth-child(2),
-            .data-table td:nth-child(3),
-            .data-table td:nth-child(4),
-            .data-table td:nth-child(5),
-            .data-table td:nth-child(6),
-            .data-table td:nth-child(7),
-            .data-table td:nth-child(8),
-            .data-table td:nth-child(9),
-            .data-table td:nth-child(10),
-            .data-table td:nth-child(11) {
-                width: 60px;
-                min-width: 60px;
-                max-width: 60px;
+            .data-table th:not(:first-child),
+            .data-table td:not(:first-child) {
+                width: 70px;
+                min-width: 70px;
+                max-width: 70px;
+            }
+            
+            /* 在小屏幕上调整表头字体大小 */
+            .data-table th {
+                font-size: 0.8rem;
+                padding: 8px 4px;
+            }
+            
+            .data-table td {
+                padding: 8px 4px;
+                font-size: 0.8rem;
             }
         }
     </style>
@@ -342,8 +356,8 @@
             <div class="section">
                 <h2>Research Overview</h2>
                 <div class="image-container">
-                    <img src="pipeline.png" alt="Visualization Research Illustration">
-                    <div class="image-caption">Figure 1: The pipeline of PlotGen-Bench. PlotGen-Bench supports 5 Python rendering libraries, 3 tasks, and rendering validation across 30 types of visualizations, including complex plots such as 3D plots, animations, and interactive plots.</div>
+                    <img src="pipeline.png" alt="Pipeline Overview">
+                    <div class="image-caption">Figure 1: Overview of the PlotGen-Bench evaluation pipeline.</div>
                 </div>
             </div>
             
@@ -355,16 +369,16 @@
                         <thead>
                             <tr>
                                 <th>Model</th>
-                                <th>Distribution</th>
-                                <th>Comparison</th>
-                                <th>Trend</th>
-                                <th>Composition</th>
-                                <th>Correlation</th>
-                                <th>Flow</th>
-                                <th>Dimension</th>
-                                <th>Enhancement</th>
-                                <th>Animation</th>
-                                <th>Overall</th>
+                                <th title="Distribution">Dist.</th>
+                                <th title="Comparison">Comp.</th>
+                                <th title="Trend">Trend</th>
+                                <th title="Composition">Comp.</th>
+                                <th title="Correlation">Corr.</th>
+                                <th title="Flow">Flow</th>
+                                <th title="Dimension">Dim.</th>
+                                <th title="Enhancement">Enh.</th>
+                                <th title="Animation">Anim.</th>
+                                <th title="Overall">Overall</th>
                             </tr>
                         </thead>
                         <tbody>
