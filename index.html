@@ -131,6 +131,7 @@
             width: 100%;
             border-collapse: collapse;
             min-width: 800px;
+            table-layout: fixed; /* 添加固定表格布局 */
         }
         
         .data-table th {
@@ -154,6 +155,29 @@
             width: 220px;
             min-width: 220px;
             max-width: 220px;
+        }
+        
+        /* 设置PR和GS列的宽度 */
+        .data-table th[colspan="2"] {
+            width: 120px;
+            min-width: 120px;
+            max-width: 120px;
+        }
+        
+        .data-table td:nth-child(2),
+        .data-table td:nth-child(3),
+        .data-table td:nth-child(4),
+        .data-table td:nth-child(5),
+        .data-table td:nth-child(6),
+        .data-table td:nth-child(7),
+        .data-table td:nth-child(8),
+        .data-table td:nth-child(9),
+        .data-table td:nth-child(10),
+        .data-table td:nth-child(11) {
+            width: 80px;
+            min-width: 80px;
+            max-width: 80px;
+            text-align: center;
         }
         
         .data-table tr:nth-child(even) {
@@ -265,6 +289,22 @@
                 min-width: 180px;
                 max-width: 180px;
             }
+            
+            /* 在小屏幕上调整其他列宽度 */
+            .data-table td:nth-child(2),
+            .data-table td:nth-child(3),
+            .data-table td:nth-child(4),
+            .data-table td:nth-child(5),
+            .data-table td:nth-child(6),
+            .data-table td:nth-child(7),
+            .data-table td:nth-child(8),
+            .data-table td:nth-child(9),
+            .data-table td:nth-child(10),
+            .data-table td:nth-child(11) {
+                width: 60px;
+                min-width: 60px;
+                max-width: 60px;
+            }
         }
     </style>
 </head>
@@ -279,7 +319,7 @@
                 <strong>Wenmeng Yu<sup>2</sup></strong>, 
                 <strong>Zhe Su<sup>2</sup></strong>, 
                 <strong>Jibing Gong<sup>3</sup></strong>, 
-                <strong>Jie Tang<sup>1*</sup></strong>
+                <strong>Jie Tang<sup>1</sup></strong>
             </div>
             <div class="institutions">
                 <sup>1</sup>Tsinghua University, 
