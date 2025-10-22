@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlotGen-Bench: Evaluating VLMs on Generating Visualization Code</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #1a237e;
+            --secondary-color: #3949ab;
+            --accent-color: #5c6bc0;
+            --light-color: #e8eaf6;
+            --text-color: #212121;
+            --light-text: #757575;
+            --border-color: #c5cae9;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: #f5f7ff;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .authors {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+        
+        .institutions {
+            font-size: 0.95rem;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+        
+        .correspondence {
+            font-size: 0.85rem;
+            opacity: 0.7;
+            font-style: italic;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+        }
+        
+        h2 {
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+        
+        .abstract {
+            background-color: var(--light-color);
+            padding: 20px;
+            border-radius: 6px;
+            border-left: 4px solid var(--accent-color);
+        }
+        
+        .abstract p {
+            text-align: justify;
+            font-size: 1.05rem;
+        }
+        
+        .image-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 30px 0;
+        }
+        
+        .image-container img {
+            max-width: 100%;
+            border-radius: 6px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 15px;
+        }
+        
+        .image-caption {
+            font-style: italic;
+            color: var(--light-text);
+            text-align: center;
+            max-width: 80%;
+        }
+        
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            margin: 20px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border-radius: 8px;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+        
+        .data-table th {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+        
+        .data-table td {
+            padding: 10px 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        /* 设置第一列宽度 */
+        .data-table th:first-child, 
+        .data-table td:first-child {
+            width: 220px;
+            min-width: 220px;
+            max-width: 220px;
+        }
+        
+        .data-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        .data-table tr:hover {
+            background-color: var(--light-color);
+        }
+        
+        .section-header {
+            background-color: var(--light-color);
+            color: var(--primary-color);
+            font-weight: 600;
+            padding: 8px 15px;
+        }
+        
+        .model-name {
+            font-weight: 600;
+        }
+        
+        .score {
+            font-weight: 500;
+            color: var(--secondary-color);
+        }
+        
+        .highlight {
+            background-color: #ffecb3 !important;
+            font-weight: bold;
+        }
+        
+        .data-download {
+            background-color: var(--light-color);
+            padding: 20px;
+            border-radius: 6px;
+            border-left: 4px solid var(--accent-color);
+        }
+        
+        .download-btn {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            text-decoration: none;
+            margin-top: 15px;
+            transition: background-color 0.3s;
+        }
+        
+        .download-btn:hover {
+            background-color: var(--secondary-color);
+        }
+        
+        .citation {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 6px;
+            border-left: 4px solid var(--accent-color);
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        
+        .copy-btn {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 4px;
+            text-decoration: none;
+            margin-top: 15px;
+            transition: background-color 0.3s;
+            cursor: pointer;
+            border: none;
+            font-size: 0.9rem;
+        }
+        
+        .copy-btn:hover {
+            background-color: var(--secondary-color);
+        }
+        
+        footer {
+            background-color: var(--primary-color);
+            color: white;
+            text-align: center;
+            padding: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .table-caption {
+            margin: 10px 0;
+            font-style: italic;
+            color: var(--light-text);
+            text-align: center;
+            font-size: 0.95rem;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            /* 在小屏幕上调整第一列宽度 */
+            .data-table th:first-child, 
+            .data-table td:first-child {
+                width: 180px;
+                min-width: 180px;
+                max-width: 180px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>PlotGen-Bench: Evaluating VLMs on Generating Visualization Code from Diverse Plots across Multiple Libraries</h1>
+            <div class="authors">
+                <strong>Yi Zhao<sup>1</sup></strong>, 
+                <strong>Zhen Yang<sup>1</sup></strong>, 
+                <strong>Shuaiqi Duan<sup>2</sup></strong>, 
+                <strong>Wenmeng Yu<sup>2</sup></strong>, 
+                <strong>Zhe Su<sup>2</sup></strong>, 
+                <strong>Jibing Gong<sup>3</sup></strong>, 
+                <strong>Jie Tang<sup>1*</sup></strong>
+            </div>
+            <div class="institutions">
+                <sup>1</sup>Tsinghua University, 
+                <sup>2</sup>Zhipu.AI, 
+                <sup>3</sup>Yanshan University
+            </div>
+            <div class="correspondence">
+                <sup>*</sup>Corresponding author
+            </div>
+        </header>
+        
+        <div class="content">
+            <div class="section">
+                <h2>Abstract</h2>
+                <div class="abstract">
+                    <p>Recent advances in vision–language models (VLMs) have expanded their multimodal code generation capabilities, yet their ability to generate executable visualization code from plots, especially for complex 3D, animated, plot-to-plot transformations, or multi-library scenarios, remains underexplored. To address this gap, we introduce PlotGen-Bench, a comprehensive benchmark for evaluating plot-to-code generation under realistic and complex visualization scenarios. The benchmark spans 9 major categories, 30 subcategories, and 3 core tasks—plot replication, plot transformation, and multi-library generation, covering both 2D, 3D and animated plots across 5 widely used visualization libraries. Through systematic evaluation of state-of-the-art open- and closed-source VLMs, we find that open-source models still lag considerably behind in visual fidelity and semantic consistency, despite achieving comparable code executability. Moreover, all models exhibit substantial degradation on reasoning-intensive tasks such as chart type conversion and animation generation. PlotGen-Bench establishes a rigorous foundation for advancing research toward more capable and reliable VLMs for visualization authoring and code synthesis.</p>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>Research Overview</h2>
+                <div class="image-container">
+                    <img src="https://picsum.photos/seed/visualization-research/800/400.jpg" alt="Visualization Research Illustration">
+                    <div class="image-caption">Figure 1: Researchers evaluating visualization code generation capabilities in a collaborative academic setting.</div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>Performance Comparison Across Different Plot Types</h2>
+                <div class="table-caption">Table 1: Performance comparison (0–100) of vision–language models on PlotGen-Bench across different plot types. Overall scores are computed as macro-averages across all sub-categories, excluding Animation for fair comparison.</div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Model</th>
+                                <th>Distribution</th>
+                                <th>Comparison</th>
+                                <th>Trend</th>
+                                <th>Composition</th>
+                                <th>Correlation</th>
+                                <th>Flow</th>
+                                <th>Dimension</th>
+                                <th>Enhancement</th>
+                                <th>Animation</th>
+                                <th>Overall</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="section-header">
+                                <td colspan="11">Open-source VLM</td>
+                            </tr>
+                            <tr>
+                                <td class="model-name">InternVL3-9B</td>
+                                <td>16.0</td>
+                                <td>26.8</td>
+                                <td>21.7</td>
+                                <td>20.8</td>
+                                <td>13.3</td>
+                                <td>25.0</td>
+                                <td>17.7</td>
+                                <td>25.3</td>
+                                <td>2.5</td>
+                                <td>21.8</td>
+                            </tr>
+                            <tr>
+                                <td class="model-name">InternVL3-78B</td>
+                                <td>43.4</td>
+                                <td>55.7</td>
+                                <td>39.6</td>
+                                <td>47.3</td>
+                                <td>49.0</td>
+                                <td>40.4</td>
+                                <td>55.9</td>
+                                <td>48.0</td>
+                                <td>33.2</td>
+                                <td>48.3</td>
+                            </tr>
+                            <tr>
+                                <td class="model-name">Qwen2.5-VL-7B-Instruct</td>
+                                <td>34.3</td>
+                                <td>47.2</td>
+                                <td>28.0</td>
+                                <td>31.7</td>
+                                <td>28.6</td>
+                                <td>25.4</td>
+                                <td>44.4</td>
+                                <td>35.6</td>
+                                <td>2.6</td>
+                                <td>35.2</td>
+                            </tr>
+                            <tr>
+                                <td class="model-name">Qwen2.5-VL-72B-Instruct</td>
+                                <td>56.2</td>
+                                <td>61.1</td>
+                                <td>48.0</td>
+                                <td>52.8</td>
+                                <td>60.2</td>
+                                <td>51.7</td>
+                                <td class="highlight">71.8</td>
+                                <td>55.4</td>
+                                <td>32.0</td>
+                                <td>56.4</td>
+                            </tr>
+                            <tr>
+                                <td class="model-name">MiMo-VL-7B-SFT</td>
+                                <td>22.5</td>
+                                <td>29.0</td>
+                                <td>24.3</td>
+                                <td>25.4</td>
+                                <td>28.9</td>
+                                <td>23.7</td>
+                                <td>28.7</td>
+                                <td>31.2</td>
+                                <td>7.0</td>
+                                <td>27.4</td>
+                            </tr>
+                            <tr>
+                                <td class="model-name">MiMo-VL-7B-RL</td>
+                                <td>21.2</td>
+                                <td>24.0</td>
+                                <td>25.5</td>
+                                <td>23.4</td>
+                                <td>29.2</td>
+                                <td>18.1</td>
+                                <td>24.8</td>
+                                <td>28.9</td>
+                                <td>6.4</td>
+                                <td>25.7</td>
+                            </tr>
+                            <tr>
+                                <td class="model-name">Kimi-VL-A3B-Instruct</td>
+                                <td>33.4</td>
+                                <td>39.9</td>
+                                <td>40.6</td>
+                                <td>25.5</td>
+                                <td>31.0</td>
+                                <td>31.0</td>
+                                <td>30.3</td>
+                                <td>38.0</td>
+                                <td>17.7</td>
+                                <td>34.4</td>
+                            </tr>
+                            <tr>
+                                <td class="model-name">Kimi-VL-A3B-Thinking</td>
+                                <td>18.3</td>
+                                <td>34.4</td>
+                                <td>17.3</td>
+                                <td>16.6</td>
+                                <td>19.5</td>
+                                <td>10.8</td>
+                                <td>19.2</td>
+                                <td>21.0</td>
+                                <td>5.5</td>
+                                <td>20.3</td>
+                            </tr>
+                            <tr>
+                                <td class="model-name">GLM-4.1V-9B-Thinking</td>
+                                <td>32.4</td>
+                                <td>44.2</td>
+                                <td>31.9</td>
+                                <td>33.8</td>
+                                <td>35.0</td>
+                                <td>47.0</td>
+                                <td>34.4</td>
+                                <td>40.0</td>
+                                <td>--</td>
+                                <td>26.9</td>
+                            </tr>
+                            <tr>
+                                <td class="model-name">GLM-4.5V</td>
+                                <td>48.6</td>
+                                <td>52.0</td>
+                                <td>44.2</td>
+                                <td>43.5</td>
+                                <td>40.2</td>
+                                <td>28.9</td>
+                                <td>51.2</td>
+                                <td>50.9</td>
+                                <td>--</td>
+                                <td>47.2</td>
+                            </tr>
+                            <tr>
+                                <td class="model-name">Qwen3-VL-235B-A22B-Instruct</td>
+                                <td class="highlight">64.7</td>
+                                <td class="highlight">71.0</td>
+                                <td class="highlight">60.6</td>
+                                <td class="highlight">66.4</td>
+                                <td class="highlight">66.8</td>
+                                <td class="highlight">61.5</td>
+                                <td>65.1</td>
+                                <td class="highlight">62.3</td>
+                                <td class="highlight">38.1</td>
+                                <td class="highlight">64.6</td>
+                            </tr>
+                            <tr class="section-header">
+                                <td colspan="11">Closed-source VLM</td>
+                            </tr>
+                            <tr>
+                                <td class="model-name">Claude-Sonnet-4-20250514-Thinking</td>
+                                <td>76.7</td>
+                                <td>76.2</td>
+                                <td>72.7</td>
+                                <td>74.3</td>
+                                <td>76.1</td>
+                                <td>50.1</td>
+                                <td class="highlight">82.9</td>
+                                <td>72.5</td>
+                                <td>44.5</td>
+                                <td>74.1</td>
+                            </tr>
+                            <tr>
+                                <td class="model-name">Claude-3.7-Sonnet-20250219-Thinking</td>
+                                <td>73.7</td>
+                                <td>79.9</td>
+                                <td>72.8</td>
+                                <td>74.4</td>
+                                <td class="highlight">81.0</td>
+                                <td>69.5</td>
+                                <td>67.6</td>
+                                <td>72.8</td>
+                                <td>34.5</td>
+                                <td>74.0</td>
+                            </tr>
+                            <tr>
+                                <td class="model-name">GPT-5-2025-08-07</td>
+                                <td class="highlight">78.7</td>
+                                <td class="highlight">87.8</td>
+                                <td class="highlight">76.1</td>
+                                <td class="highlight">78.3</td>
+                                <td>78.4</td>
+                                <td class="highlight">75.0</td>
+                                <td>81.9</td>
+                                <td class="highlight">79.9</td>
+                                <td class="highlight">45.2</td>
+                                <td class="highlight">79.7</td>
+                            </tr>
+                            <tr>
+                                <td class="model-name">GPT-4o-2024-11-20</td>
+                                <td>69.1</td>
+                                <td>71.5</td>
+                                <td>69.1</td>
+                                <td>58.5</td>
+                                <td>68.2</td>
+                                <td>68.7</td>
+                                <td>70.1</td>
+                                <td>69.8</td>
+                                <td>41.7</td>
+                                <td>67.7</td>
+                            </tr>
+                            <tr>
+                                <td class="model-name">GPT-4o-Mini-2024-07-18</td>
+                                <td>51.2</td>
+                                <td>62.8</td>
+                                <td>54.4</td>
+                                <td>52.4</td>
+                                <td>51.8</td>
+                                <td>54.9</td>
+                                <td>61.2</td>
+                                <td>57.2</td>
+                                <td>37.1</td>
+                                <td>55.5</td>
+                            </tr>
+                            <tr>
+                                <td class="model-name">Gemini-2.5-Pro</td>
+                                <td>73.1</td>
+                                <td>76.8</td>
+                                <td>70.7</td>
+                                <td>76.0</td>
+                                <td>75.3</td>
+                                <td>59.5</td>
+                                <td>76.3</td>
+                                <td>67.7</td>
+                                <td>--</td>
+                                <td>72.0</td>
+                            </tr>
+                            <tr>
+                                <td class="model-name">Gemini-2.5-Flash</td>
+                                <td>57.3</td>
+                                <td>60.3</td>
+                                <td>44.7</td>
+                                <td>55.1</td>
+                                <td>61.9</td>
+                                <td>54.1</td>
+                                <td>56.0</td>
+                                <td>59.9</td>
+                                <td>--</td>
+                                <td>60.0</td>
+                            </tr>
+                            <tr>
+                                <td class="model-name">Doubao-1.5-Thinking-Pro-Vision-250415</td>
+                                <td>48.6</td>
+                                <td>55.7</td>
+                                <td>52.0</td>
+                                <td>38.6</td>
+                                <td>48.9</td>
+                                <td>45.6</td>
+                                <td>51.8</td>
+                                <td>50.8</td>
+                                <td>28.6</td>
+                                <td>48.7</td>
+                            </tr>
+                            <tr>
+                                <td class="model-name">Doubao-Seed-1-6-Thinking-250715</td>
+                                <td>55.2</td>
+                                <td>67.9</td>
+                                <td>54.0</td>
+                                <td>54.5</td>
+                                <td>52.7</td>
+                                <td>47.7</td>
+                                <td>57.3</td>
+                                <td>58.9</td>
+                                <td>32.5</td>
+                                <td>57.1</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>Performance Comparison Across Different Libraries</h2>
+                <div class="table-caption">Table 2: Performance comparison of vision–language models on PlotGen-Bench across different libraries. PR denotes the pass rate (%), and GS denotes the GPT-4o score (0–100).</div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th rowspan="2">Model</th>
+                                <th colspan="2">Matplotlib</th>
+                                <th colspan="2">Seaborn</th>
+                                <th colspan="2">Plotly</th>
+                                <th colspan="2">Plotnine</th>
+                                <th colspan="2">NetworkX</th>
+                            </tr>
+                            <tr>
+                                <th>PR</th>
+                                <th>GS</th>
+                                <th>PR</th>
+                                <th>GS</th>
+                                <th>PR</th>
+                                <th>GS</th>
+                                <th>PR</th>
+                                <th>GS</th>
+                                <th>PR</th>
+                                <th>GS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="section-header">
+                                <td colspan="11">Open-source VLM</td>
+                            </tr>
+                            <tr>
+                                <td class="model-name">InternVL3-9B</td>
+                                <td>43.4</td>
+                                <td>20.7</td>
+                                <td>20.4</td>
+                                <td>6.9</td>
+                                <td>46.5</td>
+                                <td>19.3</td>
+                                <td>0.0</td>
+                                <td>0.0</td>
+                                <td>41.7</td>
+                                <td>21.5</td>
+                            </tr>
+                            <tr>
+                                <td class="model-name">InternVL3-78B</td>
+                                <td>71.7</td>
+                                <td>43.1</td>
+                                <td>69.4</td>
+                                <td>42.7</td>
+                                <td class="highlight">81.4</td>
+                                <td>52.0</td>
+                                <td>21.1</td>
+                                <td>11.9</td>
+                                <td>86.1</td>
+                                <td>56.5</td>
+                            </tr>
+                            <tr>
+                                <td class="model-name">Qwen2.5-VL-7B-Instruct</td>
+                                <td>71.7</td>
+                                <td>28.7</td>
+                                <td>57.1</td>
+                                <td>31.3</td>
+                                <td>79.1</td>
+                                <td>45.0</td>
+                                <td>0.0</td>
+                                <td>0.0</td>
+                                <td>75.0</td>
+                                <td>35.2</td>
+                            </tr>
+                            <tr>
+                                <td class="model-name">Qwen2.5-VL-72B-Instruct</td>
+                                <td>84.7</td>
+                                <td>53.1</td>
+                                <td>77.6</td>
+                                <td>55.1</td>
+                                <td>79.1</td>
+                                <td>53.3</td>
+                                <td>15.8</td>
+                                <td>13.5</td>
+                                <td>83.3</td>
+                                <td>58.0</td>
+                            </tr>
+                            <tr>
+                                <td class="model-name">MiMo-VL-7B-SFT</td>
+                                <td>56.5</td>
+                                <td>30.7</td>
+                                <td>34.7</td>
+                                <td>17.2</td>
+                                <td>2.3</td>
+                                <td>1.0</td>
+                                <td>10.5</td>
+                                <td>2.7</td>
+                                <td>47.2</td>
+                                <td>21.8</td>
+                            </tr>
+                            <tr>
+                                <td class="model-name">MiMo-VL-7B-RL</td>
+                                <td>60.9</td>
+                                <td>27.4</td>
+                                <td>28.6</td>
+                                <td>16.2</td>
+                                <td>7.0</td>
+                                <td>4.2</td>
+                                <td>0.0</td>
+                                <td>0.0</td>
+                                <td>47.2</td>
+                                <td>26.2</td>
+                            </tr>
+                            <tr>
+                                <td class="model-name">Kimi-VL-A3B-Instruct</td>
+                                <td>32.6</td>
+                                <td>8.8</td>
+                                <td>61.2</td>
+                                <td>34.0</td>
+                                <td>18.6</td>
+                                <td>12.4</td>
+                                <td>36.8</td>
+                                <td>15.8</td>
+                                <td>72.2</td>
+                                <td>35.1</td>
+                            </tr>
+                            <tr>
+                                <td class="model-name">Kimi-VL-A3B-Thinking</td>
+                                <td>45.7</td>
+                                <td>12.0</td>
+                                <td>26.5</td>
+                                <td>14.4</td>
+                                <td>11.6</td>
+                                <td>6.3</td>
+                                <td>0.0</td>
+                                <td>0.0</td>
+                                <td>38.9</td>
+                                <td>18.2</td>
+                            </tr>
+                            <tr>
+                                <td class="model-name">GLM-4.1V-9B-Thinking</td>
+                                <td>58.7</td>
+                                <td>34.1</td>
+                                <td>46.9</td>
+                                <td>33.0</td>
+                                <td>51.1</td>
+                                <td>32.5</td>
+                                <td>0.0</td>
+                                <td>0.0</td>
+                                <td>61.1</td>
+                                <td>43.1</td>
+                            </tr>
+                            <tr>
+                                <td class="model-name">GLM-4.5V</td>
+                                <td>58.7</td>
+                                <td>44.4</td>
+                                <td>49.0</td>
+                                <td>38.7</td>
+                                <td>32.5</td>
+                                <td>22.4</td>
+                                <td>21.1</td>
+                                <td>17.3</td>
+                                <td>52.8</td>
+                                <td>39.5</td>
+                            </tr>
+                            <tr>
+                                <td class="model-name">Qwen3-VL-235B-A22B-Instruct</td>
+                                <td class="highlight">93.5</td>
+                                <td class="highlight">62</td>
+                                <td class="highlight">87.8</td>
+                                <td class="highlight">62.8</td>
+                                <td>79.1</td>
+                                <td class="highlight">58.1</td>
+                                <td class="highlight">63.2</td>
+                                <td class="highlight">41.6</td>
+                                <td class="highlight">97.2</td>
+                                <td class="highlight">72.0</td>
+                            </tr>
+                            <tr class="section-header">
+                                <td colspan="11">Closed-source VLM</td>
+                            </tr>
+                            <tr>
+                                <td class="model-name">Claude-Sonnet-4-20250514-Thinking</td>
+                                <td class="highlight">97.8</td>
+                                <td>74.4</td>
+                                <td class="highlight">93.9</td>
+                                <td>75.7</td>
+                                <td>83.7</td>
+                                <td>59.3</td>
+                                <td>36.8</td>
+                                <td>29.5</td>
+                                <td class="highlight">100.0</td>
+                                <td>81.1</td>
+                            </tr>
+                            <tr>
+                                <td class="model-name">Claude-3.7-Sonnet-20250219-Thinking</td>
+                                <td>93.5</td>
+                                <td>78.6</td>
+                                <td>87.8</td>
+                                <td>73.0</td>
+                                <td>87.0</td>
+                                <td>64.2</td>
+                                <td>5.3</td>
+                                <td>4.2</td>
+                                <td>94.4</td>
+                                <td>79.8</td>
+                            </tr>
+                            <tr>
+                                <td class="model-name">GPT-5-2025-08-07</td>
+                                <td>93.5</td>
+                                <td class="highlight">82.7</td>
+                                <td>91.8</td>
+                                <td>78.9</td>
+                                <td class="highlight">88.3</td>
+                                <td class="highlight">76.9</td>
+                                <td>36.8</td>
+                                <td>27.7</td>
+                                <td>86.1</td>
+                                <td>72.1</td>
+                            </tr>
+                            <tr>
+                                <td class="model-name">GPT-4o-2024-11-20</td>
+                                <td>89.1</td>
+                                <td>65.6</td>
+                                <td>85.7</td>
+                                <td>64.4</td>
+                                <td>86.0</td>
+                                <td>61.5</td>
+                                <td class="highlight">68.4</td>
+                                <td class="highlight">41.3</td>
+                                <td>91.7</td>
+                                <td>69.5</td>
+                            </tr>
+                            <tr>
+                                <td class="model-name">GPT-4o-Mini-2024-07-18</td>
+                                <td>82.6</td>
+                                <td>52.2</td>
+                                <td>75.5</td>
+                                <td>54.0</td>
+                                <td>79.1</td>
+                                <td>49.0</td>
+                                <td>42.1</td>
+                                <td>28.6</td>
+                                <td>91.7</td>
+                                <td>52.2</td>
+                            </tr>
+                            <tr>
+                                <td class="model-name">Gemini-2.5-Pro</td>
+                                <td>82.6</td>
+                                <td>74.2</td>
+                                <td>89.8</td>
+                                <td class="highlight">80.9</td>
+                                <td>72.1</td>
+                                <td>60.4</td>
+                                <td>10.5</td>
+                                <td>8.0</td>
+                                <td>97.2</td>
+                                <td class="highlight">85.0</td>
+                            </tr>
+                            <tr>
+                                <td class="model-name">Gemini-2.5-Flash</td>
+                                <td>67.3</td>
+                                <td>56.2</td>
+                                <td>77.5</td>
+                                <td>67.1</td>
+                                <td>44.2</td>
+                                <td>37.2</td>
+                                <td>15.7</td>
+                                <td>13.0</td>
+                                <td>72.2</td>
+                                <td>63.4</td>
+                            </tr>
+                            <tr>
+                                <td class="model-name">Doubao-1.5-Thinking-Pro-Vision-250415</td>
+                                <td>65.2</td>
+                                <td>50.1</td>
+                                <td>36.7</td>
+                                <td>28.0</td>
+                                <td>44.2</td>
+                                <td>34.2</td>
+                                <td>10.5</td>
+                                <td>8.0</td>
+                                <td>61.1</td>
+                                <td>46.8</td>
+                            </tr>
+                            <tr>
+                                <td class="model-name">Doubao-Seed-1-6-Thinking-250715</td>
+                                <td>80.4</td>
+                                <td>65.8</td>
+                                <td>53.1</td>
+                                <td>40.4</td>
+                                <td>34.8</td>
+                                <td>30.0</td>
+                                <td>26.3</td>
+                                <td>20.8</td>
+                                <td>66.7</td>
+                                <td>54.8</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>Data Download</h2>
+                <div class="data-download">
+                    <p>The PlotGen-Bench dataset is publicly available for research purposes. It contains over 10,000 plot-code pairs across 9 major categories, 30 subcategories, and 5 widely used visualization libraries. The dataset is split into training, validation, and test sets to facilitate model development and evaluation.</p>
+                    <a href="#" class="download-btn"><i class="fas fa-download"></i> Download Dataset</a>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>Citation</h2>
+                <div class="citation" id="citation-text">@article{
+    zhao2025plotgenbench,
+    title={PlotGen-Bench: Evaluating VLMs on Generating Visualization Code from Diverse Plots across Multiple Libraries},
+    author={Yi Zhao and Zhen Yang and Shuaiqi Duan and Wenmeng Yu and Zhe Su and Jibing Gong and Jie Tang},
+    year={2025},
+    journal={arXiv preprint arXiv:xxxx.xxxxx},
+}</div>
+                <button class="copy-btn" onclick="copyCitation()"><i class="fas fa-copy"></i> Copy Citation</button>
+            </div>
+        </div>
+        
+        <footer>
+            <p>© 2025 PlotGen-Bench Research Team. All rights reserved.</p>
+        </footer>
+    </div>
+    
+    <script>
+        function copyCitation() {
+            const citationText = document.getElementById('citation-text').innerText;
+            navigator.clipboard.writeText(citationText).then(() => {
+                const btn = document.querySelector('.copy-btn');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy citation: ', err);
+                alert('Failed to copy citation. Please copy manually.');
+            });
+        }
+    </script>
+</body>
+</html>
